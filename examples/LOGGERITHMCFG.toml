@@ -1,0 +1,61 @@
+[loggerithm]
+level  = 10
+
+[loggerithm.methods.trace]
+level  = 5
+label  = 'TRACE   '
+format = [
+    'Style.faint'
+]
+
+[loggerithm.methods.debug]
+level  = 10
+label  = 'DEBUG   '
+
+[loggerithm.methods.info]
+level  = 20
+label  = 'INFO    '
+format = [
+    'ColourFg.cyan',
+    'Style.faint'
+]
+
+[loggerithm.methods.success]
+level  = 25
+label  = 'SUCCESS '
+format = [
+    'ColourFg.green',
+    'Style.bold'
+]
+
+[loggerithm.methods.warning]
+level  = 30
+label  = 'WARNING '
+format = [
+    'ColourFg.yellow'
+]
+
+[loggerithm.methods.error]
+level  = 40
+label  = 'ERROR   '
+format = [
+    'ColourFg.red',
+    'Style.bold'
+]
+
+[loggerithm.methods.critical]
+level  = 50
+label  = 'CRITICAL'
+format = [
+    'ColourBg.red',
+    'ColourFg.white',
+    'Style.bold'
+]
+
+
+
+[[loggerithm.target]]
+target = 'STDERR'
+level  = 10
+format = '[{ColourFg.cyan}{time}{ColourFg.default}] [{method}] : {message}'
+

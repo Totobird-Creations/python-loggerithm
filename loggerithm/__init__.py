@@ -2,9 +2,14 @@ from typing import Tuple, Callable, Union, Optional
 
 import re
 import datetime
+import coloured
 from coloured import *
+import pathlib
+import toml
 
-__version__ = '1.0.1'
+import loggerithm.handlers
+
+__version__ = '1.1.0'
 
 
 
@@ -75,11 +80,34 @@ class LoggerTarget():
 
 
 class Logger():
-    def __init__(self):
+    def __init__(self, loadfromconfig: Optional[pathlib.Path] = None):
+        if (not (loadfromconfig == None or isinstance(loadfromconfig, pathlib.Path))):
+            raise(TypeError('Argument `loadfromconfig` must be of type `optional(pathlib.Path)`'))
         self.methods = []
         self.targets = []
-        self.labellength = 0
+        #self.labellength = 0
         self.logginglevel = 0
+        if (loadfromconfig != None):
+            data    = toml.load(loadfromconfig).get('loggerithm', {})
+            methods = data.get('methods', {})
+            for key in methods.keys():
+                method = methods[key]
+                format = [getattr(getattr(coloured, k), v) for k,v in [(i.split('.')[0], i.split('.')[1]) for i in method.get('format', [])]]
+                self.newmethod(
+                    key,
+                    level = method.get('level', 0),
+                    label = method.get('label', None),
+                    fmt   = tuple(format)
+                )
+            targets = data.get('target', [])
+            for target in targets:
+                self.newtarget(
+                    getattr(loggerithm.handlers, target.get('target')),
+                    level = target.get('level', 0),
+                    fmt   = target.get('format', '{time} - {method} : {message}')
+                )
+            self.setlevel(data.get('level', 0))
+            
 
 
     def LOG(self, method: LoggerMethod, message: str):
@@ -91,7 +119,8 @@ class Logger():
         if (not method in self.methods):
             raise(TypeError('Argument `method` must be a valid method'))
 
-        resmethod = method.label.ljust(self.labellength)
+        #resmethod = method.label.ljust(self.labellength)
+        resmethod  = method.label
         for func in method.fmt:
             resmethod = func(resmethod)
 
@@ -104,11 +133,14 @@ class Logger():
         for slot in timeslots:
             time[f't_{slot}'] = now.strftime(f'%{slot}')
 
+        def stylefunc(groups):
+            return(''.join([f'\x1b[{i}m' for i in getattr(getattr(coloured, groups.group(1)), groups.group(2))('').parts[0].colours]))
+
         if (method.logginglevel >= self.logginglevel):
             for target in self.targets:
                 if (method.logginglevel >= target.logginglevel):
                     target.target(
-                        target.fmt.format(
+                        re.sub('\\{(ColourFg|ColourBg|Style|Reset)\\.([a-z]+)\\}', stylefunc, target.fmt).format(
                             time    = str(now),
                             method  = resmethod,
                             message = message,
@@ -125,9 +157,9 @@ class Logger():
         setattr(self, name.upper(), loggermethod)
         self.methods.append(loggermethod)
 
-        length = len(label)
-        if (length > self.labellength):
-            self.labellength = length
+        #length = len(label)
+        #if (length > self.labellength):
+        #    self.labellength = length
 
 
     def newtarget(self, target: Callable, level: int = 0, fmt: Union[str, FormatString] = '{time} - {method} : {message}'):
@@ -147,8 +179,8 @@ class Logger():
 
 
 
-def new(name: str = None):
-    logger = Logger()
+def new(name: str = None, loadfromconfig: Optional[pathlib.Path] = None):
+    logger = Logger(loadfromconfig=loadfromconfig)
     if (isinstance(name, str)):
         globals()[name] = logger
     elif (name != None):
