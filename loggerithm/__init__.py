@@ -9,7 +9,7 @@ import toml
 
 import loggerithm.handlers
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
 

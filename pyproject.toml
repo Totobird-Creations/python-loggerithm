@@ -1,8 +1,11 @@
 [tool.poetry]
-name = "loggerithm"
-version = "1.1.0"
-description = ""
-authors = ["Totobird"]
+name        = "loggerithm"
+version     = "1.1.1"
+description = "Logging module for the Python programming language"
+authors     = ["Totobird"]
+license     = "MIT"
+readme      = "README.md"
+repository  = "https://github.com/toto-bird/python-loggerithm/"
 
 [tool.poetry.dependencies]
 python = "^3.9"
